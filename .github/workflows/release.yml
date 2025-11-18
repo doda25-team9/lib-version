@@ -1,0 +1,48 @@
+name: Release Library
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    name: Build & Publish lib-version
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update pom version
+        run: |
+          mvn -B versions:set -DnewVersion=${{ steps.get_version.outputs.version }}
+          mvn -B versions:commit
+
+      - name: Update version.properties
+        run: |
+          echo "version=${{ steps.get_version.outputs.version }}" > src/main/resources/version.properties
+
+      - name: Build package
+        run: mvn -B clean package
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -B deploy
