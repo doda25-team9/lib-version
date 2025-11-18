@@ -14,10 +14,37 @@ It provides a simple `VersionUtil` class that allows applications to retrieve th
 
 ---
 
+## Setup
+
+### Authentication
+
+GitHub Packages requires authentication to download packages. Configure Maven by creating or editing `~/.m2/settings.xml`:
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>github</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_GITHUB_TOKEN</password>
+    </server>
+  </servers>
+</settings>
+```
+
+**Get a token:**
+1. Go to https://github.com/settings/tokens
+2. Click "Generate new token (classic)"
+3. Select scope: `read:packages`
+4. Generate and copy the token (starts with `ghp_`)
+
+---
+
 ## Usage
 
 ### Add to Your Project
-
 ```xml
 <repositories>
     <repository>
@@ -36,7 +63,6 @@ It provides a simple `VersionUtil` class that allows applications to retrieve th
 ```
 
 ### In Your Code
-
 ```java
 import com.doda25.team9.libversion.VersionUtil;
 
@@ -47,13 +73,11 @@ System.out.println("Library version: " + version);
 ---
 
 ## Build
-
 ```bash
 mvn clean package
 ```
 
 Output JAR:
-
 ```
 target/lib-version.jar
 ```
@@ -63,7 +87,6 @@ target/lib-version.jar
 ## Release (Automated)
 
 Tag a version:
-
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
@@ -79,7 +102,6 @@ GitHub Actions will:
 ---
 
 ## Project Structure
-
 ```
 lib-version/
 ├── src/main/java/.../VersionUtil.java
@@ -100,5 +122,14 @@ lib-version/
 
 3. **Fallback**  
    Returns `"unknown"` when neither source is available.
+
+---
+
+## Troubleshooting
+
+**401 Unauthorized Error**  
+- Ensure `~/.m2/settings.xml` is configured with your GitHub token
+- Verify token has `read:packages` scope
+- Check that `<id>github</id>` matches in both `settings.xml` and `pom.xml`
 
 ---
