@@ -23,8 +23,8 @@ jobs:
       - name: Compute pre-release version
         run: |
           BASE_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | sed 's/-SNAPSHOT//')
-          BRANCH="${GITHUB_REF_NAME}"
-          TS=$(date +%y%m%d-%H%M%S)
+          BRANCH=$(echo "${GITHUB_REF_NAME}" | tr '.' '-')
+          TS=$(date +%y%m%d-%H%M%S | tr '.' '-')
           PRE="${BASE_VERSION}-${BRANCH}-${TS}"
           echo "Pre-release: $PRE"
           mvn -B versions:set -DnewVersion=$PRE
