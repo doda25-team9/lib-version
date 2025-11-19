@@ -22,21 +22,11 @@ jobs:
 
       - name: Compute pre-release version
         run: |
-          # Get base version from pom.xml (strip -SNAPSHOT)
           BASE_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | sed 's/-SNAPSHOT//')
-
-          # Sanitize branch name (replace / and . with -)
           BRANCH=$(echo "${GITHUB_REF_NAME}" | tr '/.' '-')
-
-          # Timestamp
           TS=$(date +%y%m%d-%H%M%S)
-
-          # Final pre-release version string
           PRE="${BASE_VERSION}-${BRANCH}-${TS}"
-
           echo "Pre-release version: $PRE"
-
-          # Update pom.xml and version.properties
           mvn -B versions:set -DnewVersion=$PRE
           mvn -B versions:commit
           echo "version=$PRE" > src/main/resources/version.properties
