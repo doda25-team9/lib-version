@@ -22,14 +22,14 @@ jobs:
 
       - name: Compute pre-release version
         run: |
-          ARTIFACT_ID=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.artifactId)
           BASE_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | sed 's/-SNAPSHOT//')
           BRANCH="${GITHUB_REF_NAME}"
           TS=$(date +%y%m%d-%H%M%S)
-          PRE="${ARTIFACT_ID}-${BASE_VERSION}-${BRANCH}-${TS}"
+          PRE="${BASE_VERSION}-${BRANCH}-${TS}"
           echo "Pre-release: $PRE"
           mvn -B versions:set -DnewVersion=$PRE
           mvn -B versions:commit
+          echo "version=$PRE" > src/main/resources/version.properties
 
       - name: Deploy pre-release
         env:
