@@ -25,27 +25,29 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           TAG_VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
-        id: get_version
+          echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
 
       - name: Extract version from pom.xml
         if: startsWith(github.ref, 'refs/heads/main')
         run: |
           BASE=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           BASE=${BASE%-SNAPSHOT}
-          echo "version=$BASE" >> $GITHUB_OUTPUT
-        id: get_version
+          echo "VERSION=$BASE" >> $GITHUB_ENV
 
       - name: Update pom version
-        run: mvn -B versions:set -DnewVersion=${{ steps.get_version.outputs.version }} && mvn -B versions:commit
+        run: 
+          mvn -B versions:set -DnewVersion=${{ env.VERSION }} -DgenerateBackupPoms=false && mvn -B versions:commit
+        
 
       - name: Update version.properties
-        run: echo "version=${{ steps.get_version.outputs.version }}" > src/main/resources/version.properties
+        run: 
+          echo "version=${{ steps.get_version.outputs.version }}" > src/main/resources/version.properties
 
       - name: Build & Deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B clean deploy -DskipTests
+        run: 
+          mvn -B clean deploy -DskipTests
 
       - name: Bump to next development version
         if: startsWith(github.ref, 'refs/heads/main')
