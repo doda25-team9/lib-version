@@ -8,7 +8,7 @@
 
     <groupId>com.doda25.team9</groupId>
     <artifactId>lib-version</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>lib-version</name>
