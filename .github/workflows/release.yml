@@ -56,6 +56,10 @@ jobs:
             -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT \
             -DgenerateBackupPoms=false
           mvn versions:commit
+
+          SNAPSHOT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$SNAPSHOT" > src/main/resources/version.properties
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -am "chore: bump version to next snapshot"
