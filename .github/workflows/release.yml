@@ -5,6 +5,8 @@ on:
     branches:
       # - main
       - feature/f11-pre-releases
+  tag:
+    - 'v*'
 
 jobs:
   release:
