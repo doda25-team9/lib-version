@@ -64,8 +64,8 @@ jobs:
           SNAPSHOT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$SNAPSHOT" > src/main/resources/version.properties
 
-          git config user.name "github-actions[bot]" 
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "johanhvdb" 
+          git config user.email "johanvandenber@tudelft.nl"
           git commit -am "chore: bump version to next snapshot"
           git push https://x-access-token:${GH_PAT}@github.com/doda25-team9/lib-version.git f11t
 
