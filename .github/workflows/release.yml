@@ -3,8 +3,7 @@ name: Release Library Version
 on:
   push:
     branches:
-      # - main
-      - feature/f11-pre-releases
+      - main
     tags:
       - "v*.*.*"
 
@@ -32,7 +31,7 @@ jobs:
           echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
 
       - name: Extract version from pom.xml
-        if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/feature/f11-pre-releases')
+        if: startsWith(github.ref, 'refs/heads/main') 
         run: |
           BASE=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           BASE=${BASE%-SNAPSHOT}
@@ -65,8 +64,8 @@ jobs:
           SNAPSHOT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$SNAPSHOT" > src/main/resources/version.properties
 
-          git config user.name "johanvandenber"
-          git config user.email "johanvandenber@tudelft.nl"
+          git config user.name "github-actions[bot]" 
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -am "chore: bump version to next snapshot"
-          git push https://x-access-token:${GH_PAT}@github.com/doda25-team9/lib-version.git feature/f11-pre-releases
+          git push https://x-access-token:${GH_PAT}@github.com/doda25-team9/lib-version.git main
 
