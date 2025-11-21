@@ -3,7 +3,7 @@ name: Pre-release Library Version
 on:
   push:
     branches-ignore:
-      - main
+      - test-f11
 
 jobs:
   prerelease:
@@ -17,8 +17,8 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
 
       - name: Compute pre-release version and update pom.xml
         run: |
