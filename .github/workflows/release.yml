@@ -1,48 +1,70 @@
-name: Release Library
+name: Release Library Version
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*.*.*"
 
 jobs:
   release:
-    name: Build & Publish lib-version
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       packages: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Extract version from tag
-        id: get_version
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
+
+      - name: Extract version from pom.xml
+        if: startsWith(github.ref, 'refs/heads/main') 
+        run: |
+          BASE=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          BASE=${BASE%-SNAPSHOT}
+          echo "VERSION=$BASE" >> $GITHUB_ENV
 
       - name: Update pom version
-        run: |
-          mvn -B versions:set -DnewVersion=${{ steps.get_version.outputs.version }}
-          mvn -B versions:commit
+        run: 
+          mvn -B versions:set -DnewVersion=${{ env.VERSION }} -DgenerateBackupPoms=false && mvn -B versions:commit
+        
 
       - name: Update version.properties
-        run: |
-          echo "version=${{ steps.get_version.outputs.version }}" > src/main/resources/version.properties
+        run: 
+          echo "version=${{ env.VERSION }}" > src/main/resources/version.properties
 
-      - name: Build package
-        run: mvn -B clean package
-
-      - name: Publish to GitHub Packages
+      - name: Build & Deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -B deploy
+        run: 
+          mvn -B clean deploy -DskipTests
+
+      - name: Bump to next development version
+        run: |
+          mvn -q build-helper:parse-version versions:set \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT \
+            -DgenerateBackupPoms=false
+          mvn versions:commit
+
+          SNAPSHOT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$SNAPSHOT" > src/main/resources/version.properties
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git commit -am "chore: bump version to next snapshot"
+          git push
+
