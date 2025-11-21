@@ -3,7 +3,8 @@ name: Release Library Version
 on:
   push:
     branches:
-      - main
+      # - main
+      - feature/f11-pre-releases
     tags:
       - "v*.*.*"
 
@@ -31,7 +32,7 @@ jobs:
           echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
 
       - name: Extract version from pom.xml
-        if: startsWith(github.ref, 'refs/heads/main') 
+        if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/feature/f11-pre-releases')
         run: |
           BASE=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           BASE=${BASE%-SNAPSHOT}
@@ -53,6 +54,8 @@ jobs:
           mvn -B clean deploy -DskipTests
 
       - name: Bump to next development version
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           mvn -q build-helper:parse-version versions:set \
             -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT \
@@ -62,9 +65,8 @@ jobs:
           SNAPSHOT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$SNAPSHOT" > src/main/resources/version.properties
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout main
+          git config user.name "johanvandenber"
+          git config user.email "johanvandenber@tudelft.nl"
           git commit -am "chore: bump version to next snapshot"
-          git push
+          git push https://x-access-token:${GH_PAT}@github.com/doda25-team9/lib-version.git feature/f11-pre-releases
 
