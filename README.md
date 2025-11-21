@@ -12,7 +12,7 @@ It provides a simple `VersionUtil` class that allows applications to retrieve th
 - Returns `"unknown"` if no version information is available
 - Automatically published to **GitHub Packages** on tagged releases
 - Incremental versioning on pushes to main
-- Automatic pre‑releases to **GitHub Packages** of feature branches
+- Automatic pre‑releases to **GitHub Packages** of feature branches.
 
 ---
 
