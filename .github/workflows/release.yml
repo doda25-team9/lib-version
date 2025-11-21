@@ -1,4 +1,4 @@
-name: Release Library Version On Push
+name: Release Library Version
 
 on:
   push:
