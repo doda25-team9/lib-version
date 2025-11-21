@@ -3,7 +3,7 @@ name: Pre-release Library Version
 on:
   push:
     branches-ignore:
-      - main
+      - f11t
 
 jobs:
   prerelease:

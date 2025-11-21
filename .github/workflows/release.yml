@@ -3,7 +3,7 @@ name: Release Library Version
 on:
   push:
     branches:
-      - main
+      - f11t
     tags:
       - "v*.*.*"
 
