@@ -2,7 +2,7 @@ name: Pre-release Library Version
 
 on:
   push:
-    branches-ignore:
+    branches:
       - main
 
 jobs:
