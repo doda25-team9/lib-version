@@ -3,8 +3,7 @@ name: Release Library Version On Push
 on:
   push:
     branches:
-      # - main
-      - feature/f11-pre-releases
+      - main
     tags:
       - "v*.*.*"
 
@@ -32,7 +31,7 @@ jobs:
           echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
 
       - name: Extract version from pom.xml
-        if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/heads/feature/')
+        if: startsWith(github.ref, 'refs/heads/main') 
         run: |
           BASE=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           BASE=${BASE%-SNAPSHOT}
@@ -65,7 +64,7 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout feature/f11-pre-releases
+          git checkout main
           git commit -am "chore: bump version to next snapshot"
           git push
 
