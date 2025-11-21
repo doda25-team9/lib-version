@@ -31,7 +31,7 @@ jobs:
           echo "VERSION=$TAG_VERSION" >> $GITHUB_ENV
 
       - name: Extract version from pom.xml
-        if: startsWith(github.ref, 'refs/heads/main')
+        if: startsWith(github.ref, 'refs/heads/test-f11')
         run: |
           BASE=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           BASE=${BASE%-SNAPSHOT}
