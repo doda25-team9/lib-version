@@ -86,7 +86,6 @@ target/lib-version.jar
 ---
 
 ## Release (Automated)
-Note: Often the `main` branch is protected and you cannot push directly to it. To allow the `release.yml` workflow to push the version bump to `main`, you must create a Personal Access Token with scope `repo` and add it as a repository secret with name `GH_PAT`. You also need to whitelist the account the PAT is linked to in your branch protection rule for main. 
 
 ### Tag a version
 On running:
