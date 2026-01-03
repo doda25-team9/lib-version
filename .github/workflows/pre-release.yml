@@ -1,4 +1,4 @@
-name: Pre-release Library Version
+name: Pre-release from Branch
 
 on:
   push:
@@ -20,18 +20,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Compute pre-release version and update pom.xml
+      - name: Generate pre-release version
+        id: version
         run: |
-          BASE_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version | sed 's/-SNAPSHOT//')
-          BRANCH=$(echo "${GITHUB_REF_NAME}" | tr '/.' '-')
-          TS=$(date +%y%m%d-%H%M%S)
-          PRE="${BASE_VERSION}-${BRANCH}-${TS}"
-          echo "Pre-release version: $PRE"
-          mvn -B versions:set -DnewVersion=$PRE
-          mvn -B versions:commit
-          echo "version=$PRE" > src/main/resources/version.properties
+          BASE=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
+          BASE=${BASE%-SNAPSHOT}
+          BRANCH=$(echo "$GITHUB_REF_NAME" | tr '/.' '-')
+          TIMESTAMP=$(date -u +%y%m%d-%H%M%S)
+          PRE_VERSION="${BASE}-${BRANCH}-${TIMESTAMP}"
+          echo "version=$PRE_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Deploy pre-release
+      - name: Update version
+        run: |
+          mvn -B versions:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
+          mvn -B versions:commit
+          echo "version=${{ steps.version.outputs.version }}" > src/main/resources/version.properties
+
+      - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -B clean deploy -DskipTests
