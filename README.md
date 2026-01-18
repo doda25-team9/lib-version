@@ -10,9 +10,10 @@ It provides a simple `VersionUtil` class that allows applications to retrieve th
 - Reads version from **MANIFEST.MF** when packaged as a JAR  
 - Falls back to `version.properties` during development  
 - Returns `"unknown"` if no version information is available  
-- Automatically published to **GitHub Packages** on tagged releases
-- Incremental versioning on pushes to main
-- Automatic pre‑releases to **GitHub Packages** of feature branches
+- Automatically published to **GitHub Packages** on releases
+- Automatic version bumping after stable releases
+- Automatic pre‑releases to **GitHub Packages** from feature branches
+
 ---
 
 ## Setup
@@ -87,29 +88,27 @@ target/lib-version.jar
 
 ## Release (Automated)
 
-### Tag a version
-On running:
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
+### Stable Release
+To create a stable release:
+
+1. Go to **Actions** → **Release Stable Version**
+2. Click **Run workflow**
+3. Select branch: `main`
+4. Click **Run workflow**
 
 GitHub Actions will:
-1. Update `version.properties` and `pom.xml` for the build with the tag version
-2. Build the library  
-3. Publish to **GitHub Packages**
-4. Bump `version.properties` and `pom.xml` on main to the next incremental version
+1. Read version from `pom.xml` (e.g., `2.0.1-SNAPSHOT`)
+2. Remove `-SNAPSHOT` and update files to release version
+3. Create git commit with release version
+4. Create git tag (e.g., `v2.0.1`) pointing to that commit
+5. Build and publish to **GitHub Packages**
+6. Create GitHub Release with JAR attachment
+7. Automatically bump to next version (e.g., `2.0.2-SNAPSHOT`)
+8. Commit and push version bump to main
 
-### Pushing to main
-On pushing to `main`, like when merging a pull request, GitHub Actions will:
+**Published versions:** https://github.com/doda25-team9/lib-version/packages
 
-1. Read the version from `pom.xml` and remove "-SNAPSHOT"
-2. Update `version.properties` and `pom.xml` for the build
-3. Build the library  
-4. Publish to **GitHub Packages**
-5. Bump `version.properties` and `pom.xml` on main to the next incremental version
-
-### Pushing to any branch except main
+### Pre-releases (Feature Branches)
 On pushing to any branch other than `main`, GitHub Actions will:
 
 1. Read the version from `pom.xml`
@@ -117,6 +116,8 @@ On pushing to any branch other than `main`, GitHub Actions will:
 3. Update `version.properties` and `pom.xml` with this pre‑release version for the build
 4. Build the library  
 5. Publish to **GitHub Packages**
+
+**Example pre-release version:** `2.0.1-feature-auth-250115-143045`
 
 ---
 
@@ -147,30 +148,34 @@ lib-version/
 
 ## Workflows
 
-This repository contains two workflows in `.github/workflows/`. The workflow `release.yml` publishes on a push to main or a tag, it automatically increases the version number in `version.properties` and `pom.xml`. The workflow`pre-release.yml` publishes a pre-release on every push to a feature branch. 
+This repository contains two workflows in `.github/workflows/`. The workflow `release.yml` creates stable releases with git tagging and version bumping. The workflow `pre-release.yml` publishes a pre-release on every push to a feature branch. 
 
-### `release.yml`
-1. **Trigger** 
-    The workflow is triggered by a Git tag matching `v*.*.*` or a push to the `main` branch.  
-2. **Steps**
+### `release.yml` – Stable Releases
+1. **Trigger**  
+    Manual via workflow_dispatch (Actions → "Release Stable Version" → Run workflow)
+
+2. **Steps**  
   The workflow:
-  - Extracts the version number from the tag if triggered by a tag or from `pom.xml` if triggered by a push.  
-  - Updates `pom.xml` and `version.properties` to that version number without "-SNAPSHOT".  
-  - Builds and deploys the library to **GitHub Packages**.  
-  - Calculates the next incremental version (`X.Y.(Z+1)-SNAPSHOT`).
-  - Updates `pom.xml` and `version.properties` with the next incremental version.
-  - Commits the updates files to main. 
+  - Reads the version from `pom.xml` and removes `-SNAPSHOT`
+  - Updates `pom.xml` and `version.properties` to release version
+  - Creates git commit with release version
+  - Creates git tag (e.g., `v2.0.1`) pointing to that commit
+  - Builds and deploys the library to **GitHub Packages**
+  - Creates GitHub Release with JAR attachment
+  - Calculates the next incremental version (`X.Y.(Z+1)-SNAPSHOT`)
+  - Updates `pom.xml` and `version.properties` with the next version
+  - Commits and pushes changes to main
 
 ### `pre-release.yml` – Branch Pre‑Releases
-1. **Trigger** 
-    The workflow is triggered by a push to any branch except `main`.  
-2. **Steps**
-  The workflow:
-  - Reads the base version from `pom.xml`.  
-  - Generates a pre‑release version string that includes branch name and timestamp.
-  - Updates `pom.xml` and `version.properties` with this pre‑release version for deployment.  
-  - Deploys to **GitHub Packages**.  
+1. **Trigger**  
+    Automatic on push to any branch except `main`
 
+2. **Steps**  
+  The workflow:
+  - Reads the base version from `pom.xml`
+  - Generates a pre‑release version string that includes branch name and timestamp
+  - Updates `pom.xml` and `version.properties` with this pre‑release version for deployment
+  - Deploys to **GitHub Packages**
 
 ---
 
