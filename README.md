@@ -12,7 +12,7 @@ It provides a simple `VersionUtil` class that allows applications to retrieve th
 - Returns `"unknown"` if no version information is available  
 - Automatically published to **GitHub Packages** on releases
 - Automatic version bumping after stable releases
-- Automatic pre‑releases to **GitHub Packages** from feature branches
+- Automatic pre-releases to **GitHub Packages** from feature branches
 
 ---
 
@@ -89,31 +89,28 @@ target/lib-version.jar
 ## Release (Automated)
 
 ### Stable Release
-To create a stable release:
+Stable releases are triggered automatically when code is pushed to the `main` branch:
 
-1. Go to **Actions** → **Release Stable Version**
-2. Click **Run workflow**
-3. Select branch: `main`
-4. Click **Run workflow**
-
-GitHub Actions will:
-1. Read version from `pom.xml` (e.g., `2.0.1-SNAPSHOT`)
-2. Remove `-SNAPSHOT` and update files to release version
-3. Create git commit with release version
-4. Create git tag (e.g., `v2.0.1`) pointing to that commit
-5. Build and publish to **GitHub Packages**
-6. Create GitHub Release with JAR attachment
-7. Automatically bump to next version (e.g., `2.0.2-SNAPSHOT`)
-8. Commit and push version bump to main
+1. Make your changes and commit
+2. Push to `main` branch
+3. GitHub Actions will automatically:
+   - Read version from `pom.xml` (e.g., `2.0.1-SNAPSHOT`)
+   - Remove `-SNAPSHOT` and update to release version
+   - Create git commit with release version
+   - Create git tag (e.g., `v2.0.1`) pointing to that commit
+   - Build and publish to **GitHub Packages**
+   - Create GitHub Release with JAR attachment
+   - Automatically bump to next version (e.g., `2.0.2-SNAPSHOT`)
+   - Commit and push version bump to main with `[skip ci]` to prevent loops
 
 **Published versions:** https://github.com/doda25-team9/lib-version/packages
 
 ### Pre-releases (Feature Branches)
-On pushing to any branch other than `main`, GitHub Actions will:
+On pushing to any branch other than `main`, GitHub Actions will automatically:
 
-1. Read the version from `pom.xml`
-2. Generate a pre‑release version string including the branch name and a timestamp  
-3. Update `version.properties` and `pom.xml` with this pre‑release version for the build
+1. Read the base version from `pom.xml`
+2. Generate a pre-release version string including the branch name and timestamp  
+3. Update `pom.xml` with this pre-release version
 4. Build the library  
 5. Publish to **GitHub Packages**
 
@@ -152,30 +149,31 @@ This repository contains two workflows in `.github/workflows/`. The workflow `re
 
 ### `release.yml` – Stable Releases
 1. **Trigger**  
-    Manual via workflow_dispatch (Actions → "Release Stable Version" → Run workflow)
+   Automatic on push to `main` branch (with skip-ci protection)
 
 2. **Steps**  
-  The workflow:
-  - Reads the version from `pom.xml` and removes `-SNAPSHOT`
-  - Updates `pom.xml` and `version.properties` to release version
-  - Creates git commit with release version
-  - Creates git tag (e.g., `v2.0.1`) pointing to that commit
-  - Builds and deploys the library to **GitHub Packages**
-  - Creates GitHub Release with JAR attachment
-  - Calculates the next incremental version (`X.Y.(Z+1)-SNAPSHOT`)
-  - Updates `pom.xml` and `version.properties` with the next version
-  - Commits and pushes changes to main
+   The workflow:
+   - Checks for `[skip ci]` in commit message to prevent infinite loops
+   - Reads the version from `pom.xml` and removes `-SNAPSHOT`
+   - Updates `pom.xml` to release version
+   - Creates git commit with release version
+   - Creates git tag (e.g., `v2.0.1`) pointing to that commit
+   - Builds and deploys the library to **GitHub Packages**
+   - Creates GitHub Release with JAR attachment
+   - Calculates the next incremental version (`X.Y.(Z+1)-SNAPSHOT`)
+   - Updates `pom.xml` with the next version
+   - Commits and pushes changes to main with `[skip ci]` tag
 
-### `pre-release.yml` – Branch Pre‑Releases
+### `pre-release.yml` – Branch Pre-Releases
 1. **Trigger**  
-    Automatic on push to any branch except `main`
+   Automatic on push to any branch except `main`
 
 2. **Steps**  
-  The workflow:
-  - Reads the base version from `pom.xml`
-  - Generates a pre‑release version string that includes branch name and timestamp
-  - Updates `pom.xml` and `version.properties` with this pre‑release version for deployment
-  - Deploys to **GitHub Packages**
+   The workflow:
+   - Reads the base version from `pom.xml`
+   - Generates a pre-release version string that includes branch name and timestamp
+   - Updates `pom.xml` with this pre-release version
+   - Builds and deploys to **GitHub Packages**
 
 ---
 
@@ -185,5 +183,9 @@ This repository contains two workflows in `.github/workflows/`. The workflow `re
 - Ensure `~/.m2/settings.xml` is configured with your GitHub token
 - Verify token has `read:packages` scope
 - Check that `<id>github</id>` matches in both `settings.xml` and `pom.xml`
+
+**Infinite Loop in Releases**
+- The workflow includes skip-ci protection to prevent this
+- Version bump commits include `[skip ci]` tag automatically
 
 ---
