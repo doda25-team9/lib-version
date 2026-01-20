@@ -15,27 +15,9 @@ public class VersionUtil {
             return version;
         }
 
-        return loadFromProperties();
+        return "development";
     }
-
-    private static String loadFromProperties() {
-        try (InputStream input = VersionUtil.class
-                .getClassLoader()
-                .getResourceAsStream("version.properties")) {
-
-            if (input == null) {
-                return UNKNOWN;
-            }
-
-            Properties p = new Properties();
-            p.load(input);
-            return p.getProperty("version", UNKNOWN);
-
-        } catch (Exception e) {
-            return UNKNOWN;
-        }
-    }
-
+    
     public static void printVersion() {
         System.out.println("lib-version = " + getVersion());
     }
