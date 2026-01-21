@@ -34,7 +34,6 @@ jobs:
         run: |
           mvn -B versions:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
           mvn -B versions:commit
-          echo "version=${{ steps.version.outputs.version }}" > src/main/resources/version.properties
 
       - name: Build and deploy
         env:
